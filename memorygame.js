@@ -3,8 +3,8 @@ let board;
 const rowCount = 13;
 const columnCount = 20;
 const tileSize = 32;
-const boardWidth = columnCount * tileSize;   // 640
-const boardHeight = rowCount * tileSize;     // 416
+const boardWidth = columnCount * tileSize;
+const boardHeight = rowCount * tileSize;
 let context;
 
 // Game objects
@@ -48,6 +48,9 @@ const tileMap = [
 const imgBartender = new Image();
 imgBartender.src = "./bartenderFront.png";
 
+const imgWall = new Image();
+imgWall.src = "./wall.png";
+
 const imgTable = new Image();
 imgTable.src = "./table.png";
 
@@ -74,47 +77,21 @@ foodImages["🍔"].src = "./burger.png";
 foodImages["🍺"].src = "./beer.png";
 foodImages["🌭"].src = "./hotdog.png";
 
-// --- INIT ---
+// --- Initialization ---
 window.onload = function () {
-    board = document.getElementById("board");
-    board.width  = boardWidth;
-    board.height = boardHeight;
-    context = board.getContext("2d");
+  board = document.getElementById("board");
+  board.width = boardWidth;
+  board.height = boardHeight;
+  context = board.getContext("2d");
 
-    loadMap();
-    update();
+  loadMap();
+  update();
 
-    document.addEventListener("keydown", (e) => keysPressed.add(e.code));
-    document.addEventListener("keyup",   (e) => keysPressed.delete(e.code));
+  document.addEventListener("keydown", (e) => keysPressed.add(e.code));
+  document.addEventListener("keyup", (e) => keysPressed.delete(e.code));
 
-    setupMobileDPad();
-
-    scaleCanvasToScreenHole();
-    window.addEventListener("resize", scaleCanvasToScreenHole);
+  setupMobileDPad();
 };
-
-// --- SCALE CANVAS ---
-function scaleCanvasToScreenHole() {
-    const container = document.getElementById("arcade-container");
-    if (!container) return;
-
-    const holeW = container.clientWidth;
-    const holeH = container.clientHeight;
-
-    const scaleX = holeW / boardWidth;
-    const scaleY = holeH / boardHeight;
-    const scale  = Math.min(scaleX, scaleY);
-
-    const scaledW = boardWidth * scale;
-    const scaledH = boardHeight * scale;
-
-    board.style.position = "absolute";
-    board.style.width = scaledW + "px";
-    board.style.height = scaledH + "px";
-
-    board.style.left = ((holeW - scaledW) / 2) + "px";
-    board.style.top  = ((holeH - scaledH) / 2) + "px";
-}
 
 // --- Load Map ---
 function loadMap() {
@@ -154,7 +131,7 @@ function update() {
   requestAnimationFrame(update);
 }
 
-// --- Movement ---
+// --- Move Bartender ---
 function move() {
   if (!bartender) return;
 
@@ -170,6 +147,8 @@ function move() {
     vy = (vy / len) * speed;
   }
 
+  bartender.velocityX = vx;
+  bartender.velocityY = vy;
   bartender.x += vx;
   bartender.y += vy;
 
@@ -184,21 +163,20 @@ function move() {
     }
   }
 
-  // food pickup
+  // Handle food pickup
   const row = Math.floor(bartender.y / tileSize);
   const col = Math.floor(bartender.x / tileSize);
-
-  if (tileMap[row][col] === 'f') {
-    if (bartender.foodTimer <= 0) {
-      bartender.foodIndex = (bartender.foodIndex + 1) % foodTypes.length;
-      bartender.carrying = foodTypes[bartender.foodIndex];
-      bartender.foodTimer = 100;
-    } else bartender.foodTimer--;
-  } else {
-    bartender.foodTimer = 0;
+  if (row >= 0 && row < tileMap.length && col >= 0 && col < tileMap[row].length) {
+    if (tileMap[row][col] === 'f') {
+      if (bartender.foodTimer <= 0) {
+        bartender.foodIndex = (bartender.foodIndex + 1) % foodTypes.length;
+        bartender.carrying = foodTypes[bartender.foodIndex];
+        bartender.foodTimer = 100;
+      } else bartender.foodTimer--;
+    } else bartender.foodTimer = 0;
   }
 
-  // serving
+  // Serve patrons
   for (let p of activePatrons) {
     if (p.served) continue;
     if (collision(bartender, p)) {
@@ -214,22 +192,17 @@ function move() {
   }
 }
 
-// --- Patrons ---
+// --- Update Patrons ---
 function updatePatrons() {
   if (spawnCooldown <= 0 && patronQueue.length > 0 && activePatrons.length < maxPatrons) {
     const next = patronQueue.shift();
     const x = next.c * tileSize;
     const y = next.r * tileSize;
-
     activePatrons.push({
       x, y, width: tileSize, height: tileSize,
       order: foodTypes[Math.floor(Math.random() * foodTypes.length)],
-      showOrder: true,
-      timer: ORDER_DISPLAY_TIME,
-      served: false,
-      tile: next.tile
+      showOrder: true, timer: ORDER_DISPLAY_TIME, served: false, tile: next.tile
     });
-
     spawnCooldown = SPAWN_INTERVAL;
   } else spawnCooldown--;
 
@@ -245,19 +218,18 @@ function updatePatrons() {
   if (patronQueue.length === 0 && activePatrons.length === 0) nextLevel();
 }
 
-// --- Next Level ---
+// --- Advance Level ---
 function nextLevel() {
-  const seconds = Math.floor(levelTimer / 60);
-  const bonus = Math.max(0, 300 - seconds);
-
-  score += bonus;
+  // Time bonus: max 300 pts, decreases by 1 per second spent
+  const secondsSpent = Math.floor(levelTimer / 60);
+  const timeBonus = Math.max(0, 300 - secondsSpent);
+  score += timeBonus;
   levelTimer = 0;
 
   level++;
   maxPatrons = Math.min(2 + level, 6);
   SPAWN_INTERVAL = Math.max(30, SPAWN_INTERVAL - 10);
   ORDER_DISPLAY_TIME = Math.max(60, ORDER_DISPLAY_TIME - 10);
-
   loadMap();
 }
 
@@ -265,72 +237,104 @@ function nextLevel() {
 function draw() {
   context.clearRect(0, 0, board.width, board.height);
 
+  // Draw wood floor
   for (let r = 0; r < rowCount; r++) {
     for (let c = 0; c < columnCount; c++) {
       const x = c * tileSize;
       const y = r * tileSize;
-
       context.fillStyle = "#3a2615";
       context.fillRect(x, y, tileSize, tileSize);
+      context.strokeStyle = "#261b0f";
+      context.beginPath();
+      context.moveTo(x, y + tileSize / 2);
+      context.lineTo(x + tileSize, y + tileSize / 2);
+      context.stroke();
     }
   }
 
-  function drawImg(img, emoji, x, y, size) {
-    if (img.complete && img.naturalWidth !== 0) {
+  function drawWithFallback(img, emoji, x, y, size) {
+    if (img && img.complete && img.naturalWidth !== 0) {
       context.drawImage(img, x, y, size, size);
     } else {
+      context.font = `${size-4}px sans-serif`;
+      context.fillStyle = "#f9f4e8";
       context.fillText(emoji, x+4, y+size-4);
     }
   }
 
+  // Draw walls: 'X' border walls are invisible (collision still active), 'O' tables are drawn
   for (let wall of walls) {
-    const t = tileMap[Math.floor(wall.y / tileSize)][Math.floor(wall.x / tileSize)];
-    if (t === 'O') drawImg(imgTable, "🟫", wall.x, wall.y, tileSize);
+    const tileChar = tileMap[Math.floor(wall.y / tileSize)][Math.floor(wall.x / tileSize)];
+    if (tileChar === 'O') drawWithFallback(imgTable, "🟫", wall.x, wall.y, tileSize);
+    // 'X' walls intentionally not drawn — invisible boundary
   }
 
-  drawImg(imgBartender, "🟡", bartender.x, bartender.y, tileSize);
+  for (let r = 0; r < rowCount; r++) {
+    for (let c = 0; c < columnCount; c++) {
+      if (tileMap[r][c] === 'f') drawWithFallback(imgKitchen, "🟧", c*tileSize, r*tileSize, tileSize);
+    }
+  }
+
+  drawWithFallback(imgBartender, "🟡", bartender.x, bartender.y, tileSize);
 
   for (let p of activePatrons) {
-    drawImg(imgPatrons[p.tile], "🙂", p.x, p.y, tileSize);
-    if (p.showOrder) drawImg(foodImages[p.order], p.order, p.x, p.y - 24, 24);
+    const emojiMap = { b: "🔵", p: "🟣", o: "🟠" };
+    drawWithFallback(imgPatrons[p.tile] || imgPatrons.b, emojiMap[p.tile] || "🔵", p.x, p.y, tileSize);
+    if (p.showOrder) drawWithFallback(foodImages[p.order], p.order, p.x, p.y - 24, 24);
   }
+
+  if (bartender.carrying) drawWithFallback(foodImages[bartender.carrying], bartender.carrying, 200, 20, 24);
+
+  // --- HUD ---
+  const secondsSpent = Math.floor(levelTimer / 60);
+  const timeBonus = Math.max(0, 300 - secondsSpent);
+  const isWarning = timeBonus < 100;
+
+  // Score & Level
+  context.fillStyle = "#f9f4e8";
+  context.font = "16px 'Special Elite', serif";
+  context.fillText(`Sales:$ ${score}   Shift: ${level}`, 10, 20);
+
+  // Timer — turns terracotta when bonus is low
+  context.fillStyle = isWarning ? "#c46b4a" : "#f9f4e8";
+  context.fillText(`⏱ ${secondsSpent}s`, boardWidth - 80, 20);
+
+  // Time bonus indicator
+  context.fillStyle = isWarning ? "#c46b4a" : "#a8c47a";
+  context.fillText(`+${timeBonus} bonus`, boardWidth - 110, 38);
 }
 
 // --- Collision ---
 function collision(a, b) {
-  return a.x < b.x + b.width &&
-         a.x + tileSize > b.x &&
-         a.y < b.y + b.height &&
-         a.y + tileSize > b.y;
+  const shrink = a === bartender ? 10 : 0;
+  return a.x + shrink < b.x + b.width &&
+         a.x + tileSize - shrink > b.x &&
+         a.y + shrink < b.y + b.height &&
+         a.y + tileSize - shrink > b.y;
 }
 
-// --- Block ---
+// --- Block class ---
 class Block {
   constructor(x, y) {
     this.x = x;
     this.y = y;
     this.width = tileSize;
     this.height = tileSize;
+    this.velocityX = 0;
+    this.velocityY = 0;
     this.carrying = null;
     this.foodTimer = 0;
     this.foodIndex = 0;
   }
 }
 
-// --- Mobile ---
+// --- Mobile D-pad ---
 function setupMobileDPad() {
-  ["Up","Down","Left","Right"].forEach(dir => {
+  const directions = ["Up","Down","Left","Right"];
+  directions.forEach(dir => {
     const btn = document.getElementById(`dpad-${dir.toLowerCase()}`);
     if (!btn) return;
-
-    btn.addEventListener("touchstart", (e) => {
-      keysPressed.add("Arrow"+dir);
-      e.preventDefault();
-    });
-
-    btn.addEventListener("touchend", (e) => {
-      keysPressed.delete("Arrow"+dir);
-      e.preventDefault();
-    });
+    btn.addEventListener("touchstart", (e)=> { keysPressed.add("Arrow"+dir); e.preventDefault(); });
+    btn.addEventListener("touchend", (e)=> { keysPressed.delete("Arrow"+dir); e.preventDefault(); });
   });
 }
