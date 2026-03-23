@@ -79,10 +79,46 @@ foodImages["🌭"].src = "./hotdog.png";
 
 // --- Initialization ---
 window.onload = function () {
-  board = document.getElementById("board");
-  board.width = boardWidth;
-  board.height = boardHeight;
-  context = board.getContext("2d");
+    board = document.getElementById("board");
+    board.width  = boardWidth;   // 640px logical
+    board.height = boardHeight;  // 416px logical
+    context = board.getContext("2d");
+
+    loadMap();
+    update();
+
+    document.addEventListener("keydown", (e) => keysPressed.add(e.code));
+    document.addEventListener("keyup",   (e) => keysPressed.delete(e.code));
+    setupMobileDPad();
+
+    // Scale canvas to fit screen hole after layout is ready
+    scaleCanvasToScreenHole();
+    window.addEventListener("resize", scaleCanvasToScreenHole);
+};
+
+function scaleCanvasToScreenHole() {
+    const overlay = document.getElementById("screen-overlay");
+    if (!overlay) return;
+
+    const holeW = overlay.clientWidth;
+    const holeH = overlay.clientHeight;
+
+    const scaleX = holeW / boardWidth;
+    const scaleY = holeH / boardHeight;
+    const scale  = Math.min(scaleX, scaleY); // fit, don't stretch
+
+    board.style.transformOrigin = "top left";
+    board.style.transform       = `scale(${scale})`;
+    board.style.width           = boardWidth  + "px";
+    board.style.height          = boardHeight + "px";
+
+    // Center within the hole
+    const offsetX = (holeW - boardWidth  * scale) / 2;
+    const offsetY = (holeH - boardHeight * scale) / 2;
+    board.style.position = "absolute";
+    board.style.left     = offsetX + "px";
+    board.style.top      = offsetY + "px";
+}
 
   loadMap();
   update();
