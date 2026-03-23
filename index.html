@@ -6,18 +6,114 @@
     <title>Toasty's Tavern</title>
     <link rel="stylesheet" href="memorygame.css">
     <style>
-      canvas { display:block; margin:0 auto; }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #arcade-wrapper {
+            position: relative;
+            width:  min(100vw, calc(100vh * (896 / 1344)));
+            height: min(100vh, calc(100vw * (1344 / 896)));
+            max-width:  100vw;
+            max-height: 100vh;
+        }
+
+        #arcade-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Screen hole overlay — tweak these 4 values to align */
+        #screen-overlay {
+            position: absolute;
+            left:   11%;
+            top:    22.5%;
+            width:  78%;
+            height: 36.5%;
+            z-index: 10;
+            overflow: hidden;
+            border-radius: 4px;
+            background: #000;
+
+            /* CRT glow */
+            box-shadow:
+                inset 0 0 30px rgba(0,0,0,0.9),
+                inset 0 0 10px rgba(196,107,74,0.1),
+                0 0 18px rgba(196,107,74,0.08);
+        }
+
+        /* Canvas fills the screen hole exactly */
+        #board {
+            display: block;
+            width:  100% !important;
+            height: 100% !important;
+            position: absolute;
+            inset: 0;
+        }
+
+        /* Scanlines + vignette over canvas */
+        #screen-overlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.6) 100%),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.07) 2px,
+                    rgba(0,0,0,0.07) 4px
+                );
+            pointer-events: none;
+            z-index: 20;
+            border-radius: 4px;
+        }
+
+        /* D-pad — bottom right, never overlaps cabinet art */
+        #dpad {
+            position: fixed;
+            bottom: 20px;
+            right: 16px;
+            left: auto;
+            transform: none;
+            z-index: 9999;
+        }
+
+        @media (min-width: 768px) {
+            #dpad { display: none; }
+        }
     </style>
 </head>
 <body>
-    <canvas id="board"></canvas>
+
+    <div id="arcade-wrapper">
+        <img id="arcade-bg" src="toastytavernarcade.png" alt="Toasty's Tavern Arcade">
+        <div id="screen-overlay">
+            <canvas id="board"></canvas>
+        </div>
+    </div>
+
     <script src="memorygame.js"></script>
 
     <audio id="bgmusic" loop>
-      <source src="https://github.com/mxmdgames/toastystavern/blob/main/boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3" type="audio/mp3">
+        <source src="boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3" type="audio/mp3">
     </audio>
 
-    <!-- Mobile D-Pad Controls -->
+    <!-- Mobile D-Pad -->
     <div class="dpad-container" id="dpad">
         <div class="dpad-grid">
             <div class="dpad-cell"></div>
@@ -33,10 +129,15 @@
     </div>
 
     <script>
-      document.addEventListener("keydown", function startMusic() {
-        document.getElementById("bgmusic").play();
-        document.removeEventListener("keydown", startMusic);
-      });
+        // Start music on first keydown or touch
+        function startMusic() {
+            document.getElementById("bgmusic").play();
+            document.removeEventListener("keydown", startMusic);
+            document.removeEventListener("touchstart", startMusic);
+        }
+        document.addEventListener("keydown", startMusic);
+        document.addEventListener("touchstart", startMusic);
     </script>
+
 </body>
 </html>
