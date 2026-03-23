@@ -2,7 +2,7 @@
 let board;
 const rowCount = 13;
 const columnCount = 20;
-const tileSize = 32;
+const tileSize = 16;
 const boardWidth = columnCount * tileSize;
 const boardHeight = rowCount * tileSize;
 let context;
