@@ -12,6 +12,7 @@
 <body>
     <canvas id="board"></canvas>
     <script src="memorygame.js"></script>
+
     <audio id="bgmusic" loop>
       <source src="https://github.com/mxmdgames/toastystavern/blob/main/boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3" type="audio/mp3">
     </audio>
@@ -20,59 +21,22 @@
     <div class="dpad-container" id="dpad">
         <div class="dpad-grid">
             <div class="dpad-cell"></div>
-            <button class="dpad-btn dpad-up"    data-dir="U" aria-label="Up">▲</button>
+            <button class="dpad-btn dpad-up"    id="dpad-up"    aria-label="Up">▲</button>
             <div class="dpad-cell"></div>
-            <button class="dpad-btn dpad-left"  data-dir="L" aria-label="Left">◀</button>
+            <button class="dpad-btn dpad-left"  id="dpad-left"  aria-label="Left">◀</button>
             <div class="dpad-cell dpad-center"></div>
-            <button class="dpad-btn dpad-right" data-dir="R" aria-label="Right">▶</button>
+            <button class="dpad-btn dpad-right" id="dpad-right" aria-label="Right">▶</button>
             <div class="dpad-cell"></div>
-            <button class="dpad-btn dpad-down"  data-dir="D" aria-label="Down">▼</button>
+            <button class="dpad-btn dpad-down"  id="dpad-down"  aria-label="Down">▼</button>
             <div class="dpad-cell"></div>
         </div>
     </div>
 
     <script>
-      // ── Start music on first keydown ──────────────────────────────
       document.addEventListener("keydown", function startMusic() {
         document.getElementById("bgmusic").play();
         document.removeEventListener("keydown", startMusic);
       });
-
-      // ── Mobile D-Pad ──────────────────────────────────────────────
-      (function () {
-          const btns = document.querySelectorAll('.dpad-btn');
-
-          function press(e) {
-              e.preventDefault();
-              const dir = this.dataset.dir;
-              if (!dir) return;
-
-              // Same pattern as Pac-Man — set desiredDirection directly
-              desiredDirection = dir;
-
-              // Update sprite if your game uses directional images
-              if (typeof player !== 'undefined') {
-                  if      (dir === 'U') player.image = playerUpImage;
-                  else if (dir === 'D') player.image = playerDownImage;
-                  else if (dir === 'L') player.image = playerLeftImage;
-                  else if (dir === 'R') player.image = playerRightImage;
-              }
-
-              this.classList.add('dpad-active');
-          }
-
-          function release() {
-              this.classList.remove('dpad-active');
-          }
-
-          btns.forEach(btn => {
-              btn.addEventListener('touchstart', press,   { passive: false });
-              btn.addEventListener('touchend',   release, { passive: true  });
-              btn.addEventListener('mousedown',  press);
-              btn.addEventListener('mouseup',    release);
-              btn.addEventListener('mouseleave', release);
-          });
-      })();
     </script>
 </body>
 </html>
