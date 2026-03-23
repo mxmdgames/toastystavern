@@ -264,7 +264,7 @@ function draw() {
 
   for (let wall of walls) {
     const tileChar = tileMap[Math.floor(wall.y / tileSize)][Math.floor(wall.x / tileSize)];
-    if (tileChar === 'X') drawWithFallback(imgWall, "⬛", wall.x, wall.y, tileSize);
+    if (tileChar === 'X') drawWithFallback(imgWall, " ", wall.x, wall.y, tileSize);
     else if (tileChar === 'O') drawWithFallback(imgTable, "🟫", wall.x, wall.y, tileSize);
   }
 
