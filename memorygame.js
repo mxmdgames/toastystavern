@@ -46,21 +46,36 @@ const tileMap = [
 
 // --- Images ---
 const imgBartender = new Image();
-imgBartender.src = "images/bartender.png";
+imgBartender.src = "./bartenderFront.png";
+
 const imgWall = new Image();
-imgWall.src = "images/wall.png";
+imgWall.src = "./wall.png";
+
 const imgTable = new Image();
-imgTable.src = "images/table.png";
+imgTable.src = "./table.png";
+
 const imgKitchen = new Image();
-imgKitchen.src = "images/kitchen.png";
-const imgPatrons = { b: new Image(), p: new Image(), o: new Image() };
-imgPatrons.b.src = "images/patron_b.png";
-imgPatrons.p.src = "images/patron_p.png";
-imgPatrons.o.src = "images/patron_o.png";
-const foodImages = { "🍔": new Image(), "🍺": new Image(), "🌭": new Image() };
-foodImages["🍔"].src = "images/burger.png";
-foodImages["🍺"].src = "images/beer.png";
-foodImages["🌭"].src = "images/hotdog.png";
+imgKitchen.src = "./kitchen.png";
+
+const imgPatrons = {
+  b: new Image(),
+  p: new Image(),
+  o: new Image()
+};
+
+imgPatrons.b.src = "./chibi.png";
+imgPatrons.p.src = "./chibi.png";
+imgPatrons.o.src = "./chibi.png";
+
+const foodImages = {
+  "🍔": new Image(),
+  "🍺": new Image(),
+  "🌭": new Image()
+};
+
+foodImages["🍔"].src = "./burger.png";
+foodImages["🍺"].src = "./beer.png";
+foodImages["🌭"].src = "./hotdog.png";
 
 // --- Initialization ---
 window.onload = function () {
