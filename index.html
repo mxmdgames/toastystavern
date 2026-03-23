@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Memory Game</title>
+    <link rel="stylesheet" href="memorygame.css">
+    <style>
+      canvas { display:block; margin:0 auto; }
+    </style>
+</head>
+<body>
+    <canvas id="board"></canvas>
+    <script src="memorygame.js"></script>
+
+    <audio id="bgmusic" loop>
+      <source src="C:\Users\warre\Desktop\memorygame\boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3" type="audio/mp3">
+    </audio>
+
+    <script>
+      document.addEventListener("keydown", function startMusic() {
+        const music = document.getElementById("bgmusic");
+        music.play();
+        document.removeEventListener("keydown", startMusic);
+      });
+    </script>
+</body>
+</html>
