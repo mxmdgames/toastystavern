@@ -262,10 +262,11 @@ function draw() {
     }
   }
 
+  // Draw walls: 'X' border walls are invisible (collision still active), 'O' tables are drawn
   for (let wall of walls) {
     const tileChar = tileMap[Math.floor(wall.y / tileSize)][Math.floor(wall.x / tileSize)];
-    if (tileChar === 'X') drawWithFallback(imgWall, " ", wall.x, wall.y, tileSize);
-    else if (tileChar === 'O') drawWithFallback(imgTable, "🟫", wall.x, wall.y, tileSize);
+    if (tileChar === 'O') drawWithFallback(imgTable, "🟫", wall.x, wall.y, tileSize);
+    // 'X' walls intentionally not drawn — invisible boundary
   }
 
   for (let r = 0; r < rowCount; r++) {
