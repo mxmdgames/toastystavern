@@ -110,7 +110,7 @@
     <script src="memorygame.js"></script>
 
     <audio id="bgmusic" loop>
-        <source src="https://raw.githubusercontent.com/mxmdgames/toastystavern/main/boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3" type="audio/mp3">
+        <source src="boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3" type="audio/mp3">
     </audio>
 
     <!-- Mobile D-Pad -->
@@ -141,3 +141,10 @@
 
 </body>
 </html>
+```
+
+**Two important notes:**
+
+1. **GitHub audio URL** — your `<source src="https://github.com/mxmdgames/...mp3">` won't work because GitHub serves HTML pages, not raw files. Change it to the `raw.githubusercontent.com` URL:
+```
+   https://raw.githubusercontent.com/mxmdgames/toastystavern/main/boom-bap-trap-piano-synth-30-bpm-808-chill-mix-wutang_072724.mp3
